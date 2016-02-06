@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AFNetworking
 
 class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewDelegate{
 
@@ -34,7 +35,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
                         data, options:[]) as? NSDictionary {
                             NSLog("response: \(responseDictionary)")
-                            self.movies = responseDictionary["results"] as! [NSDictionary]
+                            self.movies = responseDictionary["results"] as? [NSDictionary]
                             
                             self.tableView.reloadData()
                             
@@ -65,10 +66,26 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
     // Cell gets various attributes set automatically based on table (separators) and data source (accessory views, editing controls)
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath)
+        let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieCell
         let movie = movies![indexPath.row]
         let title = movie["title"] as! String
-        cell.textLabel!.text = "\(title)"
+        let overview = movie["overview"] as! String
+        
+        cell.titleLabel.text = "\(title)"
+        cell.overviewLabel.text = "\(overview)"
+        
+        if let posterPath = movie["poster_path"] as? String {
+            let posterBaseUrl = "http://image.tmdb.org/t/p/w500"
+            let posterUrl = NSURL(string: posterBaseUrl + posterPath)
+            
+            cell.movieImageView.setImageWithURL(posterUrl!)
+        }
+        else {
+            // No poster image. Can either set to nil (no image) or a default movie poster image that you include as an asset
+            cell.movieImageView.image = nil
+        }
+        //cell.movieImageView.setImageWithURL(imageURL!)
+        
         return cell
     }
 
