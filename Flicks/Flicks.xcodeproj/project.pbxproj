@@ -14,6 +14,7 @@
 		CAF331EC1C65B3D00049BD95 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CAF331EA1C65B3D00049BD95 /* LaunchScreen.storyboard */; };
 		CAF331F41C65B4530049BD95 /* MoviesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF331F31C65B4530049BD95 /* MoviesViewController.swift */; };
 		CAF331F71C65BD0E0049BD95 /* MovieCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF331F61C65BD0E0049BD95 /* MovieCell.swift */; };
+		CAF331FA1C65C9300049BD95 /* MovieDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF331F91C65C9300049BD95 /* MovieDetailsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		CAF331ED1C65B3D00049BD95 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CAF331F31C65B4530049BD95 /* MoviesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoviesViewController.swift; sourceTree = "<group>"; };
 		CAF331F61C65BD0E0049BD95 /* MovieCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MovieCell.swift; sourceTree = "<group>"; };
+		CAF331F91C65C9300049BD95 /* MovieDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MovieDetailsViewController.swift; sourceTree = "<group>"; };
 		D66162361A7986A3CDF3B276 /* Pods-Flicks.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Flicks.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Flicks/Pods-Flicks.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -94,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				CAF331F31C65B4530049BD95 /* MoviesViewController.swift */,
+				CAF331F91C65C9300049BD95 /* MovieDetailsViewController.swift */,
 			);
 			name = "View Controllers";
 			sourceTree = "<group>";
@@ -229,6 +232,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CAF331FA1C65C9300049BD95 /* MovieDetailsViewController.swift in Sources */,
 				CAF331E21C65B3D00049BD95 /* AppDelegate.swift in Sources */,
 				CAF331F41C65B4530049BD95 /* MoviesViewController.swift in Sources */,
 				CAF331F71C65BD0E0049BD95 /* MovieCell.swift in Sources */,
