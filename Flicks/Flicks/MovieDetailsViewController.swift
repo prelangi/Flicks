@@ -10,13 +10,17 @@ import UIKit
 
 class MovieDetailsViewController: UIViewController {
 
+    @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var overviewLabel: UILabel!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var movieFullResImage: UIImageView!
     var movie:NSDictionary!
     
+    @IBOutlet weak var infoView: UIView!
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
         
         print(movie)
         let title = movie["title"] as! NSString
@@ -24,6 +28,20 @@ class MovieDetailsViewController: UIViewController {
         
         overviewLabel.text = overview as String
         titleLabel.text = title as String
+        
+        overviewLabel.sizeToFit()
+        
+        //Set movie name as the title of the view
+        self.title = title as String
+        
+        //CGFloat maxLabelWidth = 100
+        let neededSize = overviewLabel.sizeThatFits(CGSizeMake(100, CGFloat.max))
+        
+        
+        
+        //Set scrollView contentsize
+        scrollView.contentSize = CGSize(width: scrollView.frame.size.width, height: infoView.frame.origin.y + infoView.frame.size.height)
+        //scrollView.contentSize = CGSize(width: scrollView.frame.size.width, height: infoView.frame.origin.y+neededSize.height)
         
         if let posterPath = movie["poster_path"] as? String {
             let posterBaseUrl = "http://image.tmdb.org/t/p/w500"
