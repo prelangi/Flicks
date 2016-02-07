@@ -22,8 +22,57 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.separatorStyle = .None
+        
+        // Initialize a UIRefreshControl
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: "refreshControlAction:", forControlEvents: UIControlEvents.ValueChanged)
+        tableView.insertSubview(refreshControl, atIndex: 0)
         
         fetchData()
+    }
+    
+    func refreshControlAction(refreshControl:UIRefreshControl ) {
+        let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
+        let url = NSURL(string:"https://api.themoviedb.org/3/movie/\(endPoint)?api_key=\(apiKey)")
+        let request = NSURLRequest(URL: url!)
+        let session = NSURLSession(
+            configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
+            delegate:nil,
+            delegateQueue:NSOperationQueue.mainQueue()
+        )
+        
+        // Display HUD right before the request is made
+        MBProgressHUD.showHUDAddedTo(self.view, animated: true)
+        
+        let task : NSURLSessionDataTask = session.dataTaskWithRequest(request,
+            completionHandler: { (dataOrNil, response, error) in
+                if let data = dataOrNil {
+                    if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
+                        data, options:[]) as? NSDictionary {
+                            // Hide HUD once the network request comes back (must be done on main UI thread)
+                            MBProgressHUD.hideHUDForView(self.view, animated: true)
+                            
+                            NSLog("response: \(responseDictionary)")
+                            self.movies = responseDictionary["results"] as? [NSDictionary]
+                            
+                            self.tableView.reloadData()
+                            
+                            refreshControl.endRefreshing()
+                            
+                    }
+                }
+                if let networkError = error {
+                    self.networkELabel.hidden = false
+                    self.networkELabel.text = "Network Error!!"
+                    self.tableView.hidden = true
+                    
+                    
+                    
+                }
+        });
+        task.resume()
+        
     }
     
     func fetchData() {
@@ -51,6 +100,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
                             self.movies = responseDictionary["results"] as? [NSDictionary]
                             
                             self.tableView.reloadData()
+                            
                             
                     }
                 }
@@ -93,6 +143,9 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         
         cell.titleLabel.text = "\(title)"
         cell.overviewLabel.text = "\(overview)"
+        
+        //Set the selection style to None; 
+        cell.selectionStyle = .None
         
         if let posterPath = movie["poster_path"] as? String {
             let posterBaseUrl = "http://image.tmdb.org/t/p/w500"
