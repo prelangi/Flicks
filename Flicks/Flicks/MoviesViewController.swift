@@ -30,7 +30,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.separatorStyle = .None
+        //tableView.separatorStyle = .None
         
         //Set up searchBar delegate
         searchBar.delegate = self

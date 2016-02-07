@@ -12,7 +12,7 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+    var cantaloupeColor = UIColor(red: 242/255.0, green: 187/255.0, blue: 97/255.0, alpha: 1.0)
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
@@ -27,18 +27,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let nowPlayingViewController = nowPlayingNavigationController.topViewController as! MoviesViewController
         nowPlayingViewController.endPoint = "now_playing"
         nowPlayingNavigationController.tabBarItem.title = "Now Playing"
-        //nowPlayingNavigationController.tabBarItem.image = UIImage(named:"now_playing_1")
+        nowPlayingNavigationController.tabBarItem.image = UIImage(named:"Film-24")
+        nowPlayingNavigationController.navigationBar.barTintColor = cantaloupeColor
         
         let topRatedNavigationController = storyboard.instantiateViewControllerWithIdentifier("MoviesNavigationController") as! UINavigationController
         let topRatedViewController = topRatedNavigationController.topViewController as! MoviesViewController
         topRatedViewController.endPoint = "top_rated"
         topRatedViewController.title = "Top Rated"
         topRatedNavigationController.tabBarItem.title = "Top Rated"
-        //topRatedNavigationController.tabBarItem.image = UIImage(named:"now_playing_1")
+        topRatedNavigationController.tabBarItem.image = UIImage(named:"Outlined Star-24")
         
 
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = [nowPlayingNavigationController,topRatedNavigationController]
+        
+        UITabBar.appearance().barTintColor = cantaloupeColor
         
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
