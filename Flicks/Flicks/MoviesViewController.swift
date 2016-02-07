@@ -10,12 +10,20 @@ import UIKit
 import AFNetworking
 import MBProgressHUD
 
-class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewDelegate{
+class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewDelegate,UISearchBarDelegate{
 
+    
+    @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     var movies: [NSDictionary]?
     @IBOutlet weak var networkELabel: UILabel!
     var endPoint: NSString!
+    
+    //variables for searchBar support
+    var searchActive : Bool = false
+    var filtered:[NSDictionary] = []
+    var movieTitles: [String] = []
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,6 +31,10 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         tableView.dataSource = self
         tableView.delegate = self
         tableView.separatorStyle = .None
+        
+        //Set up searchBar delegate
+        searchBar.delegate = self
+        
         
         // Initialize a UIRefreshControl
         let refreshControl = UIRefreshControl()
@@ -75,6 +87,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         
     }
     
+
     func fetchData() {
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         let url = NSURL(string:"https://api.themoviedb.org/3/movie/\(endPoint)?api_key=\(apiKey)")
@@ -123,7 +136,10 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let movies = movies {
+        if searchActive == true {
+            return filtered.count
+        }
+        else if let movies = movies {
             return movies.count
         }
         else {
@@ -137,7 +153,14 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieCell
-        let movie = movies![indexPath.row]
+        
+        var movie:NSDictionary = [:]
+        if(searchActive) {
+            movie = filtered[indexPath.row]
+        } else {
+            movie = movies![indexPath.row]
+        }
+        
         let title = movie["title"] as! String
         let overview = movie["overview"] as! String
         
@@ -162,6 +185,39 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         return cell
     }
 
+    //Search Bar functions
+    func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
+        searchActive = true;
+    }
+    
+    func searchBarTextDidEndEditing(searchBar: UISearchBar) {
+        searchActive = false;
+    }
+    
+    func searchBarCancelButtonClicked(searchBar: UISearchBar) {
+        searchActive = false;
+    }
+    
+    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
+        searchActive = false;
+    }
+    
+    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+        
+        filtered = movies!.filter({ (text) -> Bool in
+            let tmp: NSString = text["title"] as! NSString
+            let range = tmp.rangeOfString(searchText, options: NSStringCompareOptions.CaseInsensitiveSearch)
+            return range.location != NSNotFound
+        })
+        
+        print("Filtered count \(filtered.count)")
+        if(filtered.count == 0){
+            searchActive = false;
+        } else {
+            searchActive = true;
+        }
+        self.tableView.reloadData()
+    }
     
     // MARK: - Navigation
 
