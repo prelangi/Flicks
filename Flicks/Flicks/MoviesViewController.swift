@@ -58,11 +58,20 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
     }
     
     func displayCollectionView() {
-        picCollectionViewEnabled = true
-        movieCollectionView.hidden = false
-        tableView.hidden = true
+        picCollectionViewEnabled = !picCollectionViewEnabled
         
-        movieCollectionView.reloadData()
+        if(picCollectionViewEnabled) {
+            movieCollectionView.hidden = false
+            tableView.hidden = true
+            movieCollectionView.reloadData()
+        }
+        else {
+            tableView.hidden = false
+            movieCollectionView.hidden = true
+            tableView.reloadData()
+            
+        }
+        
     }
     
     func refreshControlAction(refreshControl:UIRefreshControl ) {
@@ -176,8 +185,6 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         
     }
     
-    // Row display. Implementers should *always* try to reuse cells by setting each cell's reuseIdentifier and querying for available reusable cells with dequeueReusableCellWithIdentifier:
-    // Cell gets various attributes set automatically based on table (separators) and data source (accessory views, editing controls)
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieCell
@@ -200,15 +207,66 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         
         if let posterPath = movie["poster_path"] as? String {
             let posterBaseUrl = "http://image.tmdb.org/t/p/w500"
-            let posterUrl = NSURL(string: posterBaseUrl + posterPath)
+            let smallImageBaseUrl = "https://image.tmdb.org/t/p/w45"
+            let largeImageBaseUrl = "https://image.tmdb.org/t/p/original"
+            let smallImageUrl = NSURL(string: smallImageBaseUrl + posterPath)
+            let largeImageUrl = NSURL(string: largeImageBaseUrl+posterPath)
             
-            cell.movieImageView.setImageWithURL(posterUrl!)
+            let smallImageRequest = NSURLRequest(URL: smallImageUrl!)
+            let largeImageRequest = NSURLRequest(URL: largeImageUrl!)
+            
+            cell.movieImageView.setImageWithURLRequest(
+                smallImageRequest,
+                placeholderImage: nil,
+                success: { (smallImageRequest, smallImageResponse, smallImage) -> Void in
+                    
+                    // smallImageResponse will be nil if the smallImage is already available
+                    // in cache (might want to do something smarter in that case).
+                    cell.movieImageView.alpha = 0.0
+                    cell.movieImageView.image = smallImage;
+                    
+                    UIView.animateWithDuration(0.3, animations: { () -> Void in
+                        
+                        cell.movieImageView.alpha = 1.0
+                        
+                        }, completion: { (sucess) -> Void in
+                            
+                            // The AFNetworking ImageView Category only allows one request to be sent at a time
+                            // per ImageView. This code must be in the completion block.
+                            cell.movieImageView.setImageWithURLRequest(
+                                largeImageRequest,
+                                placeholderImage: smallImage,
+                                success: { (largeImageRequest, largeImageResponse, largeImage) -> Void in
+                                    
+                                    cell.movieImageView.image = largeImage;
+                                    
+                                },
+                                failure: { (request, response, error) -> Void in
+                                    // do something for the failure condition of the large image request
+                                    // possibly setting the ImageView's image to a default image
+                                    cell.movieImageView.image = smallImage
+
+                            })
+                    })
+                },
+                failure: { (request, response, error) -> Void in
+                    // do something for the failure condition
+                    // possibly try to get the large image
+                    cell.movieImageView.image = nil
+
+            })
+            
+            //let posterUrl = NSURL(string: posterBaseUrl + posterPath)
+            //cell.movieImageView.setImageWithURL(posterUrl!)
         }
         else {
             // No poster image. Can either set to nil (no image) or a default movie poster image that you include as an asset
             cell.movieImageView.image = nil
         }
-        //cell.movieImageView.setImageWithURL(imageURL!)
+        
+        
+
+        
         
         return cell
     }
