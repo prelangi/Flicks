@@ -15,6 +15,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var cantaloupeColor = UIColor(red: 242/255.0, green: 187/255.0, blue: 97/255.0, alpha: 1.0)
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+        
+        // Disable caching, so that we can demonstrate features related to making actual requests.
+        let sharedCache = NSURLCache(memoryCapacity: 0, diskCapacity: 0, diskPath: nil)
+        NSURLCache.setSharedURLCache(sharedCache)
+        //[NSURLCache setSharedURLCache:sharedCache];
+
         // Override point for customization after application launch.
         window = UIWindow(frame:UIScreen.mainScreen().bounds)
         //window?.tintColor = UIColor.yellowColor()

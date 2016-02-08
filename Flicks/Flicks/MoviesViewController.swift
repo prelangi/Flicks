@@ -25,6 +25,8 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
     var filtered:[NSDictionary] = []
     var movieTitles: [String] = []
     var picCollectionViewEnabled: Bool = false
+    var refreshControl:UIRefreshControl!
+    
 
     
     override func viewDidLoad() {
@@ -43,9 +45,11 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         searchBar.delegate = self
         
         // Initialize a UIRefreshControl
-        let refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: "refreshControlAction:", forControlEvents: UIControlEvents.ValueChanged)
-        tableView.insertSubview(refreshControl, atIndex: 0)
+        self.refreshControl = UIRefreshControl()
+        self.refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
+        self.refreshControl.addTarget(self, action: "refreshControlAction", forControlEvents: UIControlEvents.ValueChanged)
+        
+        tableView.insertSubview(self.refreshControl!, atIndex: 0)
         
         //Make network call
         fetchData()
@@ -74,7 +78,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         
     }
     
-    func refreshControlAction(refreshControl:UIRefreshControl ) {
+    func refreshControlAction() {
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         let url = NSURL(string:"https://api.themoviedb.org/3/movie/\(endPoint)?api_key=\(apiKey)")
         let request = NSURLRequest(URL: url!)
@@ -94,17 +98,18 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
                         data, options:[]) as? NSDictionary {
                             // Hide HUD once the network request comes back (must be done on main UI thread)
                             MBProgressHUD.hideHUDForView(self.view, animated: true)
-                            
+                            self.networkELabel.hidden = true
                             NSLog("response: \(responseDictionary)")
                             self.movies = responseDictionary["results"] as? [NSDictionary]
                             
                             self.tableView.reloadData()
                             
-                            refreshControl.endRefreshing()
+                            self.refreshControl!.endRefreshing()
                             
                     }
                 }
-                if let networkError = error {
+                else if let networkError = error {
+                    MBProgressHUD.hideHUDForView(self.view, animated: true)
                     self.networkELabel.hidden = false
                     self.networkELabel.text = "Network Error!!"
                     self.tableView.hidden = true
@@ -141,7 +146,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
                             
                             NSLog("response: \(responseDictionary)")
                             self.movies = responseDictionary["results"] as? [NSDictionary]
-                            
+                            self.networkELabel.hidden = true
                             self.tableView.reloadData()
                             
                             
@@ -301,32 +306,44 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         
     }
 
-    //Search Bar functions
+    //******  Search Bar functions
     func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
+        
         searchActive = true;
+        self.searchBar.showsCancelButton = true
+        searchBar.becomeFirstResponder()
     }
     
     func searchBarTextDidEndEditing(searchBar: UISearchBar) {
         searchActive = false;
+        searchBar.resignFirstResponder()
     }
     
     func searchBarCancelButtonClicked(searchBar: UISearchBar) {
         searchActive = false;
+        self.view.endEditing(true)
+        searchBar.resignFirstResponder()
     }
     
     func searchBarSearchButtonClicked(searchBar: UISearchBar) {
         searchActive = false;
+        searchBar.resignFirstResponder()
     }
     
-    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+    func searchBar(searchBar: UISearchBar,  textDidChange searchText: String) {
         
-        filtered = movies!.filter({ (text) -> Bool in
+        if(searchText=="") {
+            filtered = movies!
+        }
+        else {
+            filtered = movies!.filter({ (text) -> Bool in
             let tmp: NSString = text["title"] as! NSString
             let range = tmp.rangeOfString(searchText, options: NSStringCompareOptions.CaseInsensitiveSearch)
             return range.location != NSNotFound
-        })
+            })
+        }
         
-        //print("Filtered count \(filtered.count)")
+        print("Filtered count \(filtered.count) searchText = \(searchText)")
         if(filtered.count == 0){
             searchActive = false;
         } else {
