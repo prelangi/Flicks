@@ -36,6 +36,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         topRatedViewController.title = "Top Rated"
         topRatedNavigationController.tabBarItem.title = "Top Rated"
         topRatedNavigationController.tabBarItem.image = UIImage(named:"Outlined Star-24")
+        topRatedNavigationController.navigationBar.barTintColor = cantaloupeColor
         
 
         let tabBarController = UITabBarController()

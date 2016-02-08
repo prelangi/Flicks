@@ -10,8 +10,9 @@ import UIKit
 import AFNetworking
 import MBProgressHUD
 
-class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewDelegate,UISearchBarDelegate{
+class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewDelegate,UISearchBarDelegate,UICollectionViewDataSource,UICollectionViewDelegate{
 
+    @IBOutlet weak var movieCollectionView: UICollectionView!
     
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
@@ -23,25 +24,45 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
     var searchActive : Bool = false
     var filtered:[NSDictionary] = []
     var movieTitles: [String] = []
+    var picCollectionViewEnabled: Bool = false
 
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //Set tableViews dataSource and delegate
         tableView.dataSource = self
         tableView.delegate = self
-        //tableView.separatorStyle = .None
+        
+        //Set collectionViews dataSource and delegate
+        movieCollectionView.delegate = self
+        movieCollectionView.dataSource = self
+        
         
         //Set up searchBar delegate
         searchBar.delegate = self
-        
         
         // Initialize a UIRefreshControl
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: "refreshControlAction:", forControlEvents: UIControlEvents.ValueChanged)
         tableView.insertSubview(refreshControl, atIndex: 0)
         
+        //Make network call
         fetchData()
+        
+        let collectionImage = UIImage(named:"Grid-24")
+        let rightBarButton = UIBarButtonItem(image: collectionImage, style: UIBarButtonItemStyle.Plain, target: self, action: "displayCollectionView")
+        self.navigationItem.rightBarButtonItem = rightBarButton
+        
+        
+    }
+    
+    func displayCollectionView() {
+        picCollectionViewEnabled = true
+        movieCollectionView.hidden = false
+        tableView.hidden = true
+        
+        movieCollectionView.reloadData()
     }
     
     func refreshControlAction(refreshControl:UIRefreshControl ) {
@@ -135,7 +156,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         // Dispose of any resources that can be recreated.
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func get_movies_count()-> Int {
         if searchActive == true {
             return filtered.count
         }
@@ -145,6 +166,13 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         else {
             return 0
         }
+        
+    }
+    
+    //********* Table View methods ********
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return get_movies_count()
+        
         
     }
     
@@ -184,6 +212,36 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
         
         return cell
     }
+    
+    //****** COLLECTION VIEW METHODS *********
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return get_movies_count()
+        
+    }
+    
+    // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("picCell", forIndexPath: indexPath) as! MovieCollectionViewCell
+        
+        let movie = movies![indexPath.row]
+        cell.picTitle.text = movie["title"] as? String
+        
+        
+        if let posterPath = movie["poster_path"] as? String {
+            let posterBaseUrl = "http://image.tmdb.org/t/p/w500"
+            let posterUrl = NSURL(string: posterBaseUrl + posterPath)
+            
+            cell.picView.setImageWithURL(posterUrl!)
+        }
+        else {
+            // No poster image. Can either set to nil (no image) or a default movie poster image that you include as an asset
+            cell.picView.image = nil
+        }
+        
+        return cell
+        
+    }
 
     //Search Bar functions
     func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
@@ -210,7 +268,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
             return range.location != NSNotFound
         })
         
-        print("Filtered count \(filtered.count)")
+        //print("Filtered count \(filtered.count)")
         if(filtered.count == 0){
             searchActive = false;
         } else {
@@ -224,15 +282,27 @@ class MoviesViewController: UIViewController,UITableViewDataSource, UITableViewD
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         
-        let cell = sender as! UITableViewCell
-        let indexPath = tableView.indexPathForCell(cell)
-        let movie = movies![indexPath!.row]
+        var indexPath:NSIndexPath
+        var tableCell:UITableViewCell
+        var collectionCell:UICollectionViewCell
+        
+        
+        if(picCollectionViewEnabled) {
+            collectionCell = sender as! UICollectionViewCell
+            indexPath = movieCollectionView.indexPathForCell(collectionCell)!
+        }
+        else {
+            
+            tableCell = sender as! UITableViewCell
+            indexPath = tableView.indexPathForCell(tableCell)!
+        }
+        
+        
+        
+        let movie = movies![indexPath.row]
         let detailVC = segue.destinationViewController as! MovieDetailsViewController
         detailVC.movie = movie
         
-        
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
     }
     
 
